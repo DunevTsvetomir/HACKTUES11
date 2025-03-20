@@ -11,7 +11,7 @@ import json  # Added for saving/loading device information
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("App template")
+        self.setWindowTitle("BLE Control Panel")
 
         # Set the window size
         self.resize(800, 600)
@@ -33,8 +33,8 @@ class MainWindow(QMainWindow):
 
         # Add views to the stacked widget
         self.stacked_widget.addWidget(self.create_view_setup())  # Setup View
-        self.stacked_widget.addWidget(self.create_view_1())  # View 1
-        self.stacked_widget.addWidget(self.create_view_2())  # View 2
+        self.stacked_widget.addWidget(self.create_view_1())  # Buttons View
+        self.stacked_widget.addWidget(self.create_view_2())  # Settings View
 
         # Add the dropdown and stacked widget to the main layout
         main_layout.addWidget(self.dropdown)
@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
 
     def scan_for_devices(self):
         """Scan for BLE devices."""
-        asyncio.create_task(self.discover_devices())
+        self.discover_devices()  # Call the coroutine directly
 
     @asyncSlot()
     async def connect_to_selected_device(self, address):
@@ -105,9 +105,11 @@ class MainWindow(QMainWindow):
                     # Replace with the UUID of the writable characteristic
                     characteristic_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb"
                     await client.write_gatt_char(characteristic_uuid, text.encode())
+                    print(f"Sent: {text}")
                     self.status_label.setText(f"Sent: {text}")
         except Exception as e:
             self.status_label.setText(f"Failed to send text: {str(e)}")
+            print(f"Failed to send text:{str(e)}")
 
     def connect_to_device(self):
         """Connect to the selected device from the dropdown."""
@@ -116,23 +118,25 @@ class MainWindow(QMainWindow):
             self.status_label.setText("No device selected.")
             return
         address = self.device_dropdown.currentData()
-        asyncio.create_task(self.connect_to_selected_device(address))
+        self.connect_to_selected_device(address)  # Call the coroutine directly
 
     def create_view_1(self):
         """Create the first view with a grid of buttons."""
         view = QWidget()
         grid = QGridLayout(view)
 
+        # Define buttons with their corresponding serial messages
         buttons = [
-            ('Button 1', 0, 0), ('Button 2', 0, 1), ('Button 3', 0, 2),
-            ('Button 4', 1, 0), ('Button 5', 1, 1), ('Button 6', 1, 2),
-            ('Button 7', 2, 0), ('Button 8', 2, 1), ('Button 9', 2, 2)
+            ('Button 1', 0, 0, "Message 1"), ('Button 2', 0, 1, "Message 2"), ('Button 3', 0, 2, "Message 3"),
+            ('Button 4', 1, 0, "Message 4"), ('Button 5', 1, 1, "Message 5"), ('Button 6', 1, 2, "Message 6"),
+            ('Button 7', 2, 0, "Message 7"), ('Button 8', 2, 1, "Message 8"), ('Button 9', 2, 2, "Message 9")
         ]
 
-        for text, row, col in buttons:
+        for text, row, col, message in buttons:
             button = QPushButton(text)
             button.setMinimumSize(100, 100)
             button.setMaximumSize(300, 150)
+            button.clicked.connect(lambda _, msg=message: self.send_serial_message(msg))  # Connect to message sender
             grid.addWidget(button, row, col)
 
         # Set stretch factors to ensure uniform resizing
@@ -142,6 +146,14 @@ class MainWindow(QMainWindow):
 
         grid.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         return view
+
+    def send_serial_message(self, message):
+        """Send a customized serial message to the connected BLE device."""
+        if not self.saved_device:
+            self.status_label.setText("No device connected.")
+            return
+        self.send_text(self.saved_device, message)  # Call the coroutine directly
+        print(f"Sending message: {message}")
 
     def create_view_2(self):
         """Create the second view with checkboxes and a forget button."""
