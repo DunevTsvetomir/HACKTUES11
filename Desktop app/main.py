@@ -2,10 +2,11 @@ from PySide6.QtWidgets import (
     QMainWindow, QWidget, QPushButton, QApplication, QGridLayout,
     QVBoxLayout, QStackedWidget, QComboBox, QLabel, QCheckBox
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from qasync import QEventLoop, asyncSlot
 import asyncio
 from bleak import BleakScanner, BleakClient
+import json  # Added for saving/loading device information
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -23,8 +24,9 @@ class MainWindow(QMainWindow):
 
         # Create a dropdown menu for switching views
         self.dropdown = QComboBox()
-        self.dropdown.addItems(["Setup", "Buttons", "Settings"])
+        self.dropdown.addItems(["Buttons", "Settings"])  # Correctly map dropdown options
         self.dropdown.currentIndexChanged.connect(self.switch_view)  # Connect to view switching
+        self.dropdown.hide()  # Initially hide the dropdown menu
 
         # Create a stacked widget to hold multiple views
         self.stacked_widget = QStackedWidget()
@@ -37,6 +39,9 @@ class MainWindow(QMainWindow):
         # Add the dropdown and stacked widget to the main layout
         main_layout.addWidget(self.dropdown)
         main_layout.addWidget(self.stacked_widget)
+
+        # Load saved device information
+        self.saved_device = self.load_saved_device()
 
     def create_view_setup(self):
         """Create the setup view for BLE connection."""
@@ -80,14 +85,29 @@ class MainWindow(QMainWindow):
 
     @asyncSlot()
     async def connect_to_selected_device(self, address):
-        """Connect to the selected BLE device."""
+        """Connect to the selected BLE device and save its address."""
         self.status_label.setText(f"Connecting to {address}...")
         try:
             async with BleakClient(address) as client:
                 if client.is_connected:
                     self.status_label.setText(f"Connected to {address}")
+                    self.save_device(address)  # Save the connected device
+                    self.switch_view(0)  # Automatically switch to Buttons View
         except Exception as e:
             self.status_label.setText(f"Failed to connect: {str(e)}")
+
+    @asyncSlot()
+    async def send_text(self, address, text):
+        """Send text to the connected BLE device."""
+        try:
+            async with BleakClient(address) as client:
+                if client.is_connected:
+                    # Replace with the UUID of the writable characteristic
+                    characteristic_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb"
+                    await client.write_gatt_char(characteristic_uuid, text.encode())
+                    self.status_label.setText(f"Sent: {text}")
+        except Exception as e:
+            self.status_label.setText(f"Failed to send text: {str(e)}")
 
     def connect_to_device(self):
         """Connect to the selected device from the dropdown."""
@@ -124,7 +144,7 @@ class MainWindow(QMainWindow):
         return view
 
     def create_view_2(self):
-        """Create the second view with checkboxes."""
+        """Create the second view with checkboxes and a forget button."""
         view = QWidget()
         layout = QVBoxLayout(view)
         checkboxes = [
@@ -132,13 +152,64 @@ class MainWindow(QMainWindow):
         ]
         for checkbox in checkboxes:
             layout.addWidget(QCheckBox(checkbox[0]))
-        layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
+        # Add a "Forget Device" button
+        forget_button = QPushButton("Forget Device")
+        forget_button.clicked.connect(self.forget_device)
+        layout.addWidget(forget_button)
+
+        layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         return view
 
+    def save_device(self, address):
+        """Save the connected device's address to a file."""
+        try:
+            with open("saved_device.json", "w") as file:
+                json.dump({"address": address}, file)
+        except Exception as e:
+            self.status_label.setText(f"Failed to save device: {str(e)}")
+
+    def load_saved_device(self):
+        """Load the saved device's address from a file."""
+        try:
+            with open("saved_device.json", "r") as file:
+                data = json.load(file)
+                return data.get("address")
+        except FileNotFoundError:
+            return None
+        except Exception as e:
+            self.status_label.setText(f"Failed to load device: {str(e)}")
+            return None
+
+    def forget_device(self):
+        """Forget the saved device by deleting the saved file."""
+        try:
+            import os
+            if os.path.exists("saved_device.json"):
+                os.remove("saved_device.json")
+                self.saved_device = None
+                self.status_label.setText("Device forgotten.")
+                self.switch_view(-1)  # Switch to Setup View
+            else:
+                self.status_label.setText("No device to forget.")
+        except Exception as e:
+            self.status_label.setText(f"Failed to forget device: {str(e)}")
+
+    @asyncSlot()
+    async def auto_connect_to_saved_device(self):
+        """Automatically connect to the saved device if available."""
+        if self.saved_device:
+            self.status_label.setText(f"Auto-connecting to {self.saved_device}...")
+            await self.connect_to_selected_device(self.saved_device)
+
     def switch_view(self, index):
-        """Switch to the selected view."""
-        self.stacked_widget.setCurrentIndex(index)
+        """Switch to the selected view and hide/show the dropdown menu."""
+        self.stacked_widget.setCurrentIndex(index + 1)  # Adjust index to match views (Buttons=1, Settings=2)
+        if index == -1:  # Hide dropdown in Setup View
+            self.dropdown.hide()
+        else:  # Show dropdown in other views
+            self.dropdown.show()
+            self.dropdown.setCurrentIndex(index)  # Update dropdown selection to match the view
 
 
 if __name__ == "__main__":
@@ -150,6 +221,13 @@ if __name__ == "__main__":
 
     window = MainWindow()
     window.show()
+
+    # Schedule the auto-connect coroutine after the event loop starts
+    def start_auto_connect():
+        asyncio.run_coroutine_threadsafe(window.auto_connect_to_saved_device(), loop)
+
+    # Use a single-shot timer to schedule the coroutine after the event loop starts
+    QTimer.singleShot(0, start_auto_connect)
 
     with loop:
         loop.run_forever()
