@@ -26,8 +26,8 @@ struct {
 
     double high;
     double current;
-} weight = {false, 0, 0, 0};
-double drankWater;
+} weight = {0, 0};
+double drankWater = 0;
 
 struct StWeight{
   double weight;
@@ -37,7 +37,6 @@ bool lifted = false;
 
 double getWeight();
 bool cupLifted();
-bool isStable();
 bool noWeight();
 void stableWeight();
 
@@ -70,27 +69,30 @@ void loop()
     // return;
 
     HM10.listen();
-    weight.current = getWeight();
+    // weight.current = getWeight();
 
     if (noWeight() && !lifted)
     {
         lifted = true;
+        Serial.println("lifted");
         // In case cup is removed, do the following:
     }
     while(lifted && !noWeight()){
       stableWeight();
       if(stWeight.stable){
         weight.current = stWeight.weight;
+        Serial.println(String(weight.current));
         lifted = false;
       }
     }
 
     if (weight.current < weight.high){
       drankWater += weight.high - weight.current;
-      HM10.print("Wtr:" + String(int(drankWater * 1000)))
+      // HM10.print("Wtr:" + String(int(drankWater * 1000)));
+      Serial.println("Wtr:" + String(int(drankWater * 1000)));
     }
-    weight.high = weight.current
-
+    weight.high = weight.current;
+    return;
     while (HM10.available() > 0)
     {
         inData = HM10.readString();
@@ -121,23 +123,6 @@ double getWeight()
     return scale.get_units();
 }
 
-bool isStable()
-{
-    //Function to check if the weight is stable and then allow other code to get executed
-   bool stable = false;
-  
-        for(int i = 0; i < 10 && stable == false; i++){
-          weight.current = getWeight();
-            if(fabs(weight.last - weight.current) < 0.05){
-              stable = true;
-            }
-            else stable = false;
-            delay(500);
-         }
-    
-    return stable;
-}
-
 void stableWeight(){
   double start = getWeight();
   double weight;
@@ -153,5 +138,10 @@ void stableWeight(){
 }
 
 bool noWeight(){
-    return (getWeight() <= 0.01);
+  
+    do {
+      stableWeight();
+    }
+    while(!stWeight.stable);
+    return (stWeight.weight <= 0.01);
 }
