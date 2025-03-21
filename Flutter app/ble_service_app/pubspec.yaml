@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_reactive_ble: ^5.4.0
   permission_handler: ^11.4.0
+  flutter_ringtone_player: ^4.0.0+4
+  font_awesome_flutter: ^10.8.0
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +60,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - lib/pics/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -87,5 +92,26 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: lib/custom_fonts/Montserrat/Montserrat-100.ttf
+          weight: 100
+        - asset: lib/custom_fonts/Montserrat/Montserrat-200.ttf
+          weight: 200
+        - asset: lib/custom_fonts/Montserrat/Montserrat-300.ttf
+          weight: 300
+        - asset: lib/custom_fonts/Montserrat/Montserrat-400.ttf
+          weight: 400
+        - asset: lib/custom_fonts/Montserrat/Montserrat-500.ttf
+          weight: 500
+        - asset: lib/custom_fonts/Montserrat/Montserrat-600.ttf
+          weight: 600
+        - asset: lib/custom_fonts/Montserrat/Montserrat-700.ttf
+          weight: 700
+        - asset: lib/custom_fonts/Montserrat/Montserrat-800.ttf
+          weight: 800
+        - asset: lib/custom_fonts/Montserrat/Montserrat-900.ttf
+          weight: 900
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
