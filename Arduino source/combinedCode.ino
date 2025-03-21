@@ -86,6 +86,12 @@ void loop()
     }
     inData = ""; // Clear the command after processing
 
+    if(inData == "noheat"){
+        digitalWrite(heat, LOW);
+    }
+    inData = "";
+
+
     if(inData == "time"){
         while(weight.current > 0.01){
             digitalWrite(buzzer, HIGH);
@@ -96,10 +102,7 @@ void loop()
         
     }
     inData = "";
-    
 
-
-    
 }
 
 
@@ -116,8 +119,6 @@ bool cupLifted()
 void Heat()
 {
     digitalWrite(heat, HIGH);
-    delay(5000); // Keep heating for 5 seconds (adjust as needed)
-    digitalWrite(heat, LOW);
 }
 
 void isStable()
