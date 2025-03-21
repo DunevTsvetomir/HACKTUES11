@@ -5,10 +5,11 @@ SoftwareSerial HM10(2, 3);
 char appData;
 String inData = "";
 
-#define calibration_factor 450000 // This value is obtained using the SparkFun_HX711_Calibration sketch
+#define calibration_factor 450000
 #define LOADCELL_DOUT_PIN 3
 #define LOADCELL_SCK_PIN 2
 #define heat 6
+#define buzzer 7
 HX711 scale;
 
 // int cupWeight;
@@ -25,27 +26,31 @@ bool lifted = false;
 
 unsigned double getWeight();
 bool cupLifted();
-void heat();
-bool isStable();
+void Heat();
+void isStable();
 
 void setup()
 {
+    isStable();
+
     Serial.begin(9600);
     HM10.begin(9600);
 
     scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
-    scale.set_scale(calibration_factor); // This value is obtained by using the SparkFun_HX711_Calibration sketch
-    scale.tare();                        // Assuming there is no weight on the scale at start up, reset the scale to 0
+    scale.set_scale(calibration_factor);
+    scale.tare();                        
 
     pinMode(heat, OUTPUT); // Heating element
     pinMode(2, INPUT_PULLUP); // Reset Button
     pinMode(3, INPUT_PULLUP); // Cup Weight
-
+    pinMode(buzzer, OUTPUT); // Buzzer 
     pinMode(4, OUTPUT); // Test LED
 }
 
 void loop()
 {
+    isStable();
+
     HM10.listen();
     weight.current = getWeight();
 
@@ -77,10 +82,26 @@ void loop()
     }
     if (inData == "heat")
     {
-        heat();
+        Heat();
     }
     inData = ""; // Clear the command after processing
+
+    if(inData == "time"){
+        while(weight.current > 0.01){
+            digitalWrite(buzzer, HIGH);
+            delay(300);
+            digitalWrite(buzzer, LOW);
+            delay(300);
+        }
+        
+    }
+    inData = "";
+    
+
+
+    
 }
+
 
 unsigned double getWeight()
 {
@@ -89,27 +110,28 @@ unsigned double getWeight()
 
 bool cupLifted()
 {
-    return (getWeight() <= 0.005); // Adjust threshold as needed
+    return (getWeight() <= 0.005); 
 }
 
-void heat()
+void Heat()
 {
     digitalWrite(heat, HIGH);
     delay(5000); // Keep heating for 5 seconds (adjust as needed)
     digitalWrite(heat, LOW);
 }
 
-bool isStable()
+void isStable()
 {
-    bool stable = true;
-    unsigned double initialWeight = getWeight();
-    for(int i = 0; i < 10; i++)
-    {
-      if (abs(initialWeight - getWeight()) > 0.01) // Adjust stability threshold as needed
-      {
-          stable = false;
-      }
-      delay(500); // Wait for half a second
+    //Function to check if the weight is stable and then allow other code to get executed
+   bool stable = false;
+
+    while(stable == false){
+        for(int i = 0; i < 10; i++){
+            if(abs(initialWeight() - getWeight()) < 0.01){
+            stable = true;
+         } 
+         delay(250);
+         else stable = false;
+       }
     }
-    return stable;
 }
