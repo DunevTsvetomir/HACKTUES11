@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'BluetoothConnectPage.dart';
+import 'water_intake.dart';
 
 Future<void> requestPermissions() async {
   await Permission.bluetooth.request();
@@ -207,15 +208,7 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'HOME',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 18,
-                      color: Colors.indigo,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Image.asset('lib/pics/home.png', width: 28, height: 28,),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -225,8 +218,8 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Image.asset(
                       'lib/pics/bluetooth-logo-with-background.png',
-                      width: 40,
-                      height: 40,
+                      width: 30,
+                      height: 30,
                     ),
                   ),
                 ],
@@ -248,7 +241,7 @@ class _HomePageState extends State<HomePage> {
                         'SMART MAT',
                         style: TextStyle(
                           fontFamily: 'Montserrat',
-                          fontSize: 30,
+                          fontSize: 31,
                           fontWeight: FontWeight.bold,
                           color: Colors.indigo,
                         ),
@@ -277,7 +270,7 @@ class _HomePageState extends State<HomePage> {
                           },
                         ),
                         CardMenu(
-                          icon: 'lib/pics/air.png',
+                          icon: 'lib/pics/flame (1).png',
                           title: 'HEAT',
                         ),
                       ],
@@ -289,6 +282,11 @@ class _HomePageState extends State<HomePage> {
                         _cardMenu(
                           icon: 'lib/pics/water.png',
                           title: 'DAILY INTAKE',
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => WaterTrackerPage()),);
+                          },
                         ),
                         _cardMenu(
                           icon: 'lib/pics/settings.png',
@@ -297,7 +295,6 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   const SizedBox(height: 28),
-                  // Show Timer below the cards
                     if (_showTimer)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 20), // Adds space below
