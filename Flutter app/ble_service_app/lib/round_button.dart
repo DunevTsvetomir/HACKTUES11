@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 class RoundButton extends StatelessWidget {
   const RoundButton({
-    Key? key,
+    super.key,
     required this.icon,
-  }) : super(key: key);
+  });
   final IconData icon;
 
   @override
