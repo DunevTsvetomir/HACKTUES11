@@ -50,7 +50,7 @@
    python main.py
    ```
 
-![Desktop Application](Desktop.png)
+![Desktop Application](https://github.com/DunevTsvetomir/HACKTUES11/blob/main/src/Desktop.png)
 
 ## Приложение
 Проектът може да бъде използван за:
