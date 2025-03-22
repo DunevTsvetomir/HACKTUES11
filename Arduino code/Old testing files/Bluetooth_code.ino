@@ -30,7 +30,10 @@ void loop()
   if(inData == "Msg1") {
     // Serial.println("LED OFF");
     digitalWrite(13, LOW); 
+<<<<<<< HEAD:Old testing files/Bluetooth_code.ino
     delay(500);
+=======
+>>>>>>> 0869dd3b9a74dd1b9e59d7292bdd571916328ef2:Arduino source/Bluetooth_code.ino
   }
   if(inData == "Msg2") {
     // Serial.println("LED ON");

@@ -1,0 +1,85 @@
+/* General styles */
+QMainWindow {
+    background-color: #f5f5ff; /* Light purple background */
+}
+
+QLabel {
+    font-family: Arial, sans-serif;
+    color: #2d2d77; /* Dark blue text */
+    margin: 10px 0;
+}
+
+QPushButton {
+    background-color: #ffffff; /* White background */
+    border: 1px solid #dcdcdc;
+    border-radius: 15px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #2d2d77;
+}
+
+QPushButton:hover {
+    background-color: #e6e6ff; /* Light hover effect */
+}
+
+QPushButton#pause_play_button {
+    border: none;
+    border-radius: 32px; /* Make the button circular */
+    background-color: #2d2d77; /* Dark blue background */
+}
+
+QPushButton#pause_play_button:hover {
+    background-color: #24245c; /* Slightly darker shade for hover effect */
+}
+
+QComboBox {
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    padding: 5px;
+    font-size: 14px;
+    color: #2d2d77;
+}
+
+QComboBox::drop-down {
+    border: none;
+}
+
+QComboBox::down-arrow {
+    image: url(icons/dropdown_arrow.png); /* Replace with your custom arrow icon */
+    width: 16px;
+    height: 16px;
+}
+
+QLabel#timer_label {
+    font-size: 48px;
+    font-weight: bold;
+    color: #2d2d77;
+    margin-bottom: 20px;
+}
+
+QProgressBar {
+    border: 2px solid #2d2d77;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff; /* White text for better contrast */
+    background-color: #c5cae9; /* Light purple background */
+}
+
+QProgressBar::chunk {
+    background-color: #2d2d77; /* Darker purple for the progress */
+}
+
+QWidget { 
+    background-color: #e8eaf6; 
+    color: #000000;
+}
+
+QLabel#percentage_label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2d2d77;
+}
