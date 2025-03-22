@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (
     QMainWindow, QWidget, QPushButton, QApplication, QGridLayout,
     QVBoxLayout, QStackedWidget, QComboBox, QLabel, QHBoxLayout, QProgressBar, QInputDialog
 )
-from PySide6.QtCore import Qt, QTimer, QSize, QPropertyAnimation
+from PySide6.QtCore import Qt, QTimer, QSize, QPropertyAnimation, QUrl
 from qasync import QEventLoop, asyncSlot
 import asyncio
 from bleak import BleakScanner, BleakClient
@@ -11,6 +11,7 @@ from PySide6.QtGui import QIcon
 import os
 import time
 import datetime
+from PySide6.QtMultimedia import QSoundEffect
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -418,9 +419,23 @@ class MainWindow(QMainWindow):
                 self.countdown_timer.stop()
                 self.timer_label.setText("00:00:00")
                 self.status_label.setText("Time's up!")
+                self.play_alarm()  # Play alarm when timer ends
+                self.pause_play_button.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "icons", "play.png")))  # Set play icon
+                self.is_timer_running = False  # Ensure timer is marked as not running
         else:
             self.countdown_timer.stop()
             self.status_label.setText("Timer not running.")
+
+    def play_alarm(self):
+        alarm_sound_path = os.path.join(os.path.dirname(__file__), "alarm.wav")
+        if os.path.exists(alarm_sound_path):
+            self.alarm_sound = QSoundEffect(self)
+            self.alarm_sound.setSource(QUrl.fromLocalFile(alarm_sound_path))
+            self.alarm_sound.setLoopCount(1)  # Play the sound only once
+            self.alarm_sound.setVolume(0.5)  # Set volume (0.0 to 1.0)
+            self.alarm_sound.play()
+        else:
+            self.status_label.setText("Alarm sound file not found.")
 
     def format_time(self, seconds):
         hours = seconds // 3600
@@ -515,7 +530,8 @@ if __name__ == "__main__":
     asyncio.set_event_loop(loop)
 
     try:
-        with open("style.qss", "r") as file:
+        qss_path = os.path.join(os.path.dirname(__file__), "style.qss")
+        with open(qss_path, "r") as file:
             app.setStyleSheet(file.read())
     except FileNotFoundError:
         print("QSS file not found. Using default styles.")
