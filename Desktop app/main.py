@@ -110,6 +110,7 @@ class MainWindow(QMainWindow):
             self.status_label.setText(f"Received: {received_text}")
             if received_text.isdigit() and int(received_text) > 0:
                 contribution = int(received_text)
+                self.current_contribution = contribution  # Update current_contribution
                 self.current_water_intake += contribution
                 self.update_water_progress()
                 self.save_water_data()
@@ -259,10 +260,8 @@ class MainWindow(QMainWindow):
                 current_date = datetime.date.today().isoformat()
                 if saved_date != current_date:
                     self.current_water_intake = 0
-                    self.current_contribution = 0
                 else:
                     self.current_water_intake = data.get("current_water_intake", self.current_water_intake)
-                    self.current_contribution = data.get("current_contribution", self.current_contribution)
                 self.daily_goal = data.get("daily_goal", self.daily_goal)
                 self.timer_duration = data.get("timer_duration", self.timer_duration)
                 self.remaining_time = self.timer_duration
@@ -281,7 +280,6 @@ class MainWindow(QMainWindow):
                     data = json.load(file)
             data["daily_goal"] = self.daily_goal
             data["current_water_intake"] = self.current_water_intake
-            data["current_contribution"] = self.current_contribution
             data["timer_duration"] = self.timer_duration
             data["date"] = datetime.date.today().isoformat()
             with open("data.json", "w") as file:
